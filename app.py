@@ -38,6 +38,7 @@ def list_objects(s3_client, bucket_name: str, prefix: str):
         )
     return file_list
 
+
 # Define data type
 def table_type(df_column):
     # Note - this only works with Pandas >= 1.0.0
@@ -99,8 +100,8 @@ def split_filter_part(filter_part):
 
 external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css']
 
-app = dash.Dash(__name__, external_stylesheets=external_stylesheets,
-                url_base_pathname=os.environ["SAAGIE_BASE_PATH"]+"/", suppress_callback_exceptions=True)
+app = dash.Dash(__name__,
+                url_base_pathname=os.environ["SAAGIE_BASE_PATH"] + "/", suppress_callback_exceptions=True)
 
 # Environment variables
 postgresql_host = os.environ["POSTGRESQL_IP"]
@@ -130,7 +131,6 @@ saagie_client = SaagieApi(url_saagie=os.environ["SAAGIE_URL"],
 pg_analyse_table = os.environ['POSTGRESQL_ANALYSE_TABLE']
 supplier_table_name = os.environ['SUPPLIER_TABLE_NAME']
 cart_table_name = os.environ['POSTGRESQL_CART_TABLE']
-
 
 # Define the postgresql_supplier_table component
 df_supplier = pd.read_sql(f'SELECT * FROM {supplier_table_name}', pg_engine)
@@ -175,6 +175,7 @@ dt_cart = dash_table.DataTable(id="postgresql_cart_table",
                                page_size=20,
                                style_table={'overflowX': 'scroll'}, )
 
+
 # Define final schema table
 # final_data = []
 # final_data_dict = {}
@@ -190,6 +191,21 @@ dt_cart = dash_table.DataTable(id="postgresql_cart_table",
 #                                            style_table={'overflowX': 'scroll'},
 #                                            )
 
+
+def generate_frontpage():
+    return html.Div(
+        id="header",
+        children=[
+            html.Img(id="logo", src="/assets/logo.png"),
+            html.Div(
+                id="header-text",
+                children=[
+                    html.H1("Analyse des fichiers fournisseurs"),
+
+                ],
+            )
+        ],
+    )
 
 
 @app.callback(Output(component_id='postgresql_cart_table', component_property='data'),
@@ -338,8 +354,8 @@ def submit_to_job(filter_expression, n_click, selected_columns, value_output):
                 {"col_name": filter_col_name, "operator": operator, "filter_value": filter_value})
             # structure de la table
             # date_analyse | filtres_panier (text) | fichiers_fournisseurs (text) | colonnes_fournisseurs (text) | already_done (bool) | nom_fichier_final (text)
-            #[{'nom_fichier': 'fichier1', 'colonnes': ['col1', 'col2', 'col3']},
-            #{'nom_fichier': 'fichier2', 'colonnes': ['col1', 'col2', 'col3']}]
+            # [{'nom_fichier': 'fichier1', 'colonnes': ['col1', 'col2', 'col3']},
+            # {'nom_fichier': 'fichier2', 'colonnes': ['col1', 'col2', 'col3']}]
         dict_result["filtres_panier"] = list_filter_query
     if ctx.triggered_id == "final_submit" and selected_columns and value_output:
         dict_result["date_analyse"] = datetime.now()
@@ -367,52 +383,88 @@ def submit_to_job(filter_expression, n_click, selected_columns, value_output):
                 saagie_client.jobs.run(job_id=analyse_job_id)
 
                 return "Insertion dans la table pg_analyse_table réussie." \
-                       f"L'analyse sera disponible sous le nom de: {dict_result['nom_fichier_final']}" \
-
+                       f"L'analyse sera disponible sous le nom de: {dict_result['nom_fichier_final']}"
     return ""
 
 
-app.layout = dbc.Container(fluid=True, children=[
-    dbc.Row(html.P('Données paniers')),
-    dbc.Row(dt_cart, style={'margin-left': '2%', 'margin-right': '2%', }),
-    dbc.Row(html.Br(), class_name=".mb-4"),
-    dbc.Row(dcc.Markdown("Les filtres sur les données panier: "), ),
-    dbc.Row(dcc.Markdown(id="output_cart_filter", style={"white-space": "pre", }, ), ),
-    dbc.Row(html.Br(), class_name=".mb-4"),
-    dbc.Row(html.P('Veuillez choisir un ou plusieurs fichiers fournisseurs: ')),
-    dbc.Row(postgresql_supplier_table, style={'margin-left': '2%', 'margin-right': '2%', }),
-    dbc.Row(html.Br(), class_name=".mb-4"),
-    dbc.Row(dbc.Button("Submit", id='submit', color="primary", className="mr-1", n_clicks=0)),
-    dbc.Row(html.Br(), class_name=".mb-4"),
-    dbc.Row(html.P('Veuillez choisir le/les colonnes des fichiers fournisseurs: ')),
-    dbc.Row(html.Br(), class_name=".mb-4"),
-    html.Div(id="output_div", children=[]),
-    dbc.Row(html.Br(), class_name=".mb-4"),
-    dbc.Row(dbc.Button("Submit", id='final_submit', color="primary", className="mr-1", n_clicks=0)),
-    dbc.Row(dcc.Markdown(id="test"), ),
-    dbc.Row(html.Br(), class_name=".mb-4"),
-    # dbc.Row(dcc.Markdown("Schéma attendu de l'analyse"), ),
-    # dbc.Row(output_schema_table, style={'margin-left': '2%', 'margin-right': '2%', }),
-    # dbc.Row(html.Br(), class_name=".mb-4"),
-    #
-    # dbc.Row(html.Br(), class_name=".mb-4"),
-    # dbc.Row(html.Br(), class_name=".mb-4"),
-    dbc.Row(dbc.Button("Refresh", id='refresh', color="primary", className="mr-1", n_clicks=0)),
-    dbc.Row(html.Br(), class_name=".mb-4"),
-    dbc.Row(dcc.Markdown(id="output_supplier_choices"), ),
-    dbc.Row(html.Br(), class_name=".mb-4"),
+app.layout = html.Div(
+    [
+        html.Div(id="frontpage", className="page", children=generate_frontpage()),
+        html.Div(
+            className="section",
+            children=[
+                html.P('Données paniers'),
+                dbc.Row(dt_cart, style={'margin-left': '2%', 'margin-right': '2%', }),
+            ]
+        ),
+        html.Div(
+            className="section",
+            children=[
+                html.Div(className="section-title", children="Les filtres sur les données panier: "),
+                html.P(id="output_cart_filter", ),
+            ],
+        ),
+        html.Div(
+            className="section",
+            children=[
+                html.Div(className="section-title",
+                         children="Veuillez choisir un ou plusieurs fichiers fournisseurs: "),
+                html.Div(
+                    className="page",
+                    children=[
+                        html.Div(id="supplier-table", children=postgresql_supplier_table)
+                    ],
+                ),
+            ],
+        ),
+        html.Div(
+            className="section",
+            children=[
+                dbc.Button("Submit", id='submit', color="primary", className="mr-1", n_clicks=0)
+            ]
 
-    dbc.Row(dcc.Markdown(id="output_columns"), ),
-    dbc.Row(html.Br(), class_name=".mb-4"),
-    dbc.Row(dcc.Markdown(id="additional_cols"), ),
-    # dbc.Row(dcc.Markdown(id="output_schema"), style={'margin-left': '2%', 'margin-right': '2%', }),
-    dbc.Row(html.Br(), class_name=".mb-4"),
+        ),
 
-    dbc.Row(html.Br(), class_name=".mb-4"),
-    dbc.Row(html.Br(), class_name=".mb-4"),
+        # dbc.Row(html.P('Données paniers')),
+        # dbc.Row(dt_cart, style={'margin-left': '2%', 'margin-right': '2%', }),
+        # dbc.Row(html.Br(), class_name=".mb-4"),
+        # dbc.Row(dcc.Markdown("Les filtres sur les données panier: "), ),
+        # dbc.Row(dcc.Markdown(id="output_cart_filter", style={"white-space": "pre", }, ), ),
+        # dbc.Row(html.Br(), class_name=".mb-4"),
+        # dbc.Row(html.P('Veuillez choisir un ou plusieurs fichiers fournisseurs: ')),
+        # dbc.Row(postgresql_supplier_table, style={'margin-left': '2%', 'margin-right': '2%', }),
+        # dbc.Row(html.Br(), class_name=".mb-4"),
+        # dbc.Row(dbc.Button("Submit", id='submit', color="primary", className="mr-1", n_clicks=0)),
+        # dbc.Row(html.Br(), class_name=".mb-4"),
+        dbc.Row(html.P('Veuillez choisir le/les colonnes des fichiers fournisseurs: ')),
+        dbc.Row(html.Br(), class_name=".mb-4"),
+        html.Div(id="output_div", children=[]),
+        dbc.Row(html.Br(), class_name=".mb-4"),
+        dbc.Row(dbc.Button("Submit", id='final_submit', color="primary", className="mr-1", n_clicks=0)),
+        dbc.Row(dcc.Markdown(id="test"), ),
+        dbc.Row(html.Br(), class_name=".mb-4"),
+        # dbc.Row(dcc.Markdown("Schéma attendu de l'analyse"), ),
+        # dbc.Row(output_schema_table, style={'margin-left': '2%', 'margin-right': '2%', }),
+        # dbc.Row(html.Br(), class_name=".mb-4"),
+        #
+        # dbc.Row(html.Br(), class_name=".mb-4"),
+        # dbc.Row(html.Br(), class_name=".mb-4"),
+        dbc.Row(dbc.Button("Refresh", id='refresh', color="primary", className="mr-1", n_clicks=0)),
+        dbc.Row(html.Br(), class_name=".mb-4"),
+        dbc.Row(dcc.Markdown(id="output_supplier_choices"), ),
+        dbc.Row(html.Br(), class_name=".mb-4"),
 
-])
+        dbc.Row(dcc.Markdown(id="output_columns"), ),
+        dbc.Row(html.Br(), class_name=".mb-4"),
+        dbc.Row(dcc.Markdown(id="additional_cols"), ),
+        # dbc.Row(dcc.Markdown(id="output_schema"), style={'margin-left': '2%', 'margin-right': '2%', }),
+        dbc.Row(html.Br(), class_name=".mb-4"),
+
+        dbc.Row(html.Br(), class_name=".mb-4"),
+        dbc.Row(html.Br(), class_name=".mb-4"),
+
+    ])
 
 if __name__ == '__main__':
     print("Running second run_server")
-    app.run_server(host='0.0.0.0', debug=False, port=8050)
+    app.run_server(host='0.0.0.0', debug=True, port=8050)
