@@ -196,13 +196,15 @@ def generate_frontpage():
     return html.Div(
         id="header",
         children=[
-            html.Img(id="logo", src="/assets/logo.png"),
+            html.Img(id="logo", src="assets/logo.png", style={'display': 'inline-block',
+                                                              'height':'15%',
+                                                              'width':'15%'}),
             html.Div(
                 id="header-text",
                 children=[
-                    html.H1("Analyse des fichiers fournisseurs"),
-
+                    html.H2("Analyse des fichiers fournisseurs")
                 ],
+                style={'display': 'inline-block', 'marginLeft': '5%', 'verticalAlign': 'top'}
             )
         ],
     )
@@ -393,14 +395,15 @@ app.layout = html.Div(
         html.Div(
             className="section",
             children=[
-                html.P('Données paniers'),
+                html.Div(className="section-title",
+                         children="Données paniers"),
                 dbc.Row(dt_cart, style={'margin-left': '2%', 'margin-right': '2%', }),
             ]
         ),
         html.Div(
             className="section",
             children=[
-                html.Div(className="section-title", children="Les filtres sur les données panier: "),
+                dbc.Row(html.P('Les filtres sur les données panier: ')),
                 html.P(id="output_cart_filter", ),
             ],
         ),
@@ -424,6 +427,36 @@ app.layout = html.Div(
             ]
 
         ),
+        html.Div(
+            className="section",
+            children=[
+                html.Div(className="section-title",
+                         children="Veuillez choisir le/les colonnes des fichiers fournisseurs: "),
+                html.Div(className="page", id="output_div", children=[]),
+            ]
+
+        ),
+        html.Div(
+            className="section",
+            children=[
+                dbc.Row(dbc.Button("Submit", id='final_submit', color="primary", className="mr-1", n_clicks=0)),
+            ]
+
+        ),
+        html.Div(
+            className="section",
+            children=[
+                dbc.Row(dcc.Markdown(id="test"), ),
+            ]
+
+        ),
+        html.Div(
+            className="section",
+            children=[
+                dbc.Row(dbc.Button("Refresh", id='refresh', color="primary", className="mr-1", n_clicks=0)),
+            ]
+        ),
+
 
         # dbc.Row(html.P('Données paniers')),
         # dbc.Row(dt_cart, style={'margin-left': '2%', 'margin-right': '2%', }),
@@ -436,30 +469,22 @@ app.layout = html.Div(
         # dbc.Row(html.Br(), class_name=".mb-4"),
         # dbc.Row(dbc.Button("Submit", id='submit', color="primary", className="mr-1", n_clicks=0)),
         # dbc.Row(html.Br(), class_name=".mb-4"),
-        dbc.Row(html.P('Veuillez choisir le/les colonnes des fichiers fournisseurs: ')),
-        dbc.Row(html.Br(), class_name=".mb-4"),
-        html.Div(id="output_div", children=[]),
-        dbc.Row(html.Br(), class_name=".mb-4"),
-        dbc.Row(dbc.Button("Submit", id='final_submit', color="primary", className="mr-1", n_clicks=0)),
-        dbc.Row(dcc.Markdown(id="test"), ),
-        dbc.Row(html.Br(), class_name=".mb-4"),
+        # dbc.Row(html.P('Veuillez choisir le/les colonnes des fichiers fournisseurs: ')),
+        # dbc.Row(html.Br(), class_name=".mb-4"),
+        # html.Div(id="output_div", children=[]),
+        # dbc.Row(html.Br(), class_name=".mb-4"),
+        # dbc.Row(dbc.Button("Submit", id='final_submit', color="primary", className="mr-1", n_clicks=0)),
+        # dbc.Row(dcc.Markdown(id="test"), ),
+        # dbc.Row(html.Br(), class_name=".mb-4"),
         # dbc.Row(dcc.Markdown("Schéma attendu de l'analyse"), ),
         # dbc.Row(output_schema_table, style={'margin-left': '2%', 'margin-right': '2%', }),
         # dbc.Row(html.Br(), class_name=".mb-4"),
         #
         # dbc.Row(html.Br(), class_name=".mb-4"),
         # dbc.Row(html.Br(), class_name=".mb-4"),
-        dbc.Row(dbc.Button("Refresh", id='refresh', color="primary", className="mr-1", n_clicks=0)),
-        dbc.Row(html.Br(), class_name=".mb-4"),
-        dbc.Row(dcc.Markdown(id="output_supplier_choices"), ),
-        dbc.Row(html.Br(), class_name=".mb-4"),
+        # dbc.Row(dbc.Button("Refresh", id='refresh', color="primary", className="mr-1", n_clicks=0)),
 
-        dbc.Row(dcc.Markdown(id="output_columns"), ),
-        dbc.Row(html.Br(), class_name=".mb-4"),
-        dbc.Row(dcc.Markdown(id="additional_cols"), ),
         # dbc.Row(dcc.Markdown(id="output_schema"), style={'margin-left': '2%', 'margin-right': '2%', }),
-        dbc.Row(html.Br(), class_name=".mb-4"),
-
         dbc.Row(html.Br(), class_name=".mb-4"),
         dbc.Row(html.Br(), class_name=".mb-4"),
 
