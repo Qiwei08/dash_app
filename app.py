@@ -241,11 +241,12 @@ def submit_to_job(derived_filter, n_click, selected_columns, value_output, prefi
             with conn_pg.begin():
                 df.to_sql(pg_analyse_table, pg_engine, if_exists="append", index=False)
                 # call API pour lancer le job
-                print("API call to launch the job")
-                # saagie_client.jobs.run(job_id=analyse_job_id)
+                print("API call")
+                saagie_client.jobs.run(job_id=analyse_job_id)
 
-                return f"Insertion dans la table {pg_analyse_table} réussie." \
+                return "Insertion dans la table pg_analyse_table réussie." \
                        f"L'analyse sera disponible sous le nom de: {dict_result['nom_fichier_final']}"
+
     return ""
 
 
